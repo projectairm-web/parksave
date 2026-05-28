@@ -35,7 +35,7 @@ export function useCompass() {
         } catch { setSupported(false); return; }
       }
       window.addEventListener("deviceorientation", handler, true);
-      timerRef.current = setTimeout(() => setSupported(false), 2000);
+      timerRef.current = setTimeout(() => setSupported(false), 5000);
     };
 
     init();

@@ -7,7 +7,8 @@ export default function SaveModal({ position, loading, error, spots, onSave, onC
   const [name, setName] = useState("");
 
   const duplicate = spots.some(s => s.name.toLowerCase() === name.trim().toLowerCase());
-  const canSave   = name.trim().length > 0 && !loading && !error && !duplicate;
+  // Block only when we have no position — "unavailable" error still allows save once GPS arrives
+  const canSave   = name.trim().length > 0 && !loading && !!position && !duplicate;
 
   const submit = (e) => {
     e.preventDefault();
