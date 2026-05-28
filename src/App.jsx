@@ -26,6 +26,7 @@ export default function App() {
       <NavigateScreen
         spot={navigateTo}
         onBack={() => setNavigateTo(null)}
+        onDelete={deleteSpot}
         locationState={locationState}
       />
     );

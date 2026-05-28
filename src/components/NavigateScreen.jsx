@@ -1,4 +1,4 @@
-import { ArrowLeft, MapPin } from "lucide-react";
+import { ArrowLeft, MapPin, Trash2 } from "lucide-react";
 import MapView from "./MapView.jsx";
 import CompassArrow from "./CompassArrow.jsx";
 import PermissionPrompt from "./PermissionPrompt.jsx";
@@ -6,7 +6,7 @@ import { useCompass } from "../hooks/useCompass.js";
 import { haversine, bearing, formatDistance } from "../utils/geo.js";
 import { ARRIVED_THRESHOLD_M } from "../constants/index.js";
 
-export default function NavigateScreen({ spot, onBack, locationState }) {
+export default function NavigateScreen({ spot, onBack, onDelete, locationState }) {
   const { position, error: gpsError, requestPermission } = locationState;
   const { heading, supported: compassSupported } = useCompass();
 
@@ -20,6 +20,11 @@ export default function NavigateScreen({ spot, onBack, locationState }) {
     rotation  = heading !== null ? (dir - heading + 360) % 360 : dir;
     arrived   = distance < ARRIVED_THRESHOLD_M;
   }
+
+  const handleDelete = () => {
+    onDelete(spot.id);
+    onBack();
+  };
 
   return (
     <div className="screen navigate-screen">
@@ -43,10 +48,21 @@ export default function NavigateScreen({ spot, onBack, locationState }) {
         <>
           <div className="map-wrap">
             <MapView currentPosition={position} spot={spot} />
+
+            {/* Arrived overlay with delete option */}
             {arrived && (
               <div className="arrived-overlay">
                 <div className="arrived-icon">✓</div>
                 <div className="arrived-text">You&apos;re here!</div>
+                <div className="arrived-actions">
+                  <button className="btn btn-danger arrived-delete" onClick={handleDelete}>
+                    <Trash2 size={15} />
+                    Remove spot
+                  </button>
+                  <button className="btn btn-ghost arrived-keep" onClick={onBack}>
+                    Keep it
+                  </button>
+                </div>
               </div>
             )}
           </div>

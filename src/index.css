@@ -202,6 +202,24 @@ html, body, #root {
 .empty-title { font-size: 17px; font-weight: 600; color: var(--text-muted); }
 .empty-sub   { font-size: 14px; color: var(--text-subtle); max-width: 240px; line-height: 1.5; }
 
+/* ── Recenter button ─────────────────────────────────────── */
+.btn-recenter {
+  position: absolute;
+  top: calc(56px + env(safe-area-inset-top, 0px) + 12px);
+  right: 12px;
+  z-index: 401;
+  width: 40px; height: 40px;
+  border-radius: 10px; border: 1px solid var(--border);
+  background: rgba(22, 27, 34, 0.88);
+  backdrop-filter: blur(8px);
+  color: var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  transition: background 0.12s;
+}
+.btn-recenter:hover { background: var(--surface-2); }
+
 /* ── Spot card ───────────────────────────────────────────── */
 .spot-card {
   background: var(--surface); border: 1px solid var(--border);
@@ -212,6 +230,8 @@ html, body, #root {
 .spot-name     { font-size: 16px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .spot-meta     { display: flex; gap: 10px; margin-top: 4px; font-size: 12px; color: var(--text-muted); flex-wrap: wrap; }
 .spot-distance { color: var(--accent); font-weight: 600; }
+.spot-age      { color: var(--text-subtle); }
+.spot-walk     { color: var(--text-muted); }
 .spot-actions  { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
 
 /* ── Navigate screen ─────────────────────────────────────── */
@@ -265,7 +285,10 @@ html, body, #root {
   display: flex; align-items: center; justify-content: center;
   font-size: 44px; color: var(--accent);
 }
-.arrived-text { font-size: 24px; font-weight: 700; color: var(--accent); }
+.arrived-text    { font-size: 24px; font-weight: 700; color: var(--accent); }
+.arrived-actions { display: flex; gap: 10px; margin-top: 8px; }
+.arrived-delete  { width: auto; padding: 0 20px; background: var(--danger); color: #fff; }
+.arrived-keep    { width: auto; padding: 0 20px; }
 
 /* ── Compass ─────────────────────────────────────────────── */
 .compass-wrap { position: relative; display: flex; align-items: center; justify-content: center; }

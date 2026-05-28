@@ -20,7 +20,7 @@ function makeCurrentIcon(L) {
   });
 }
 
-export default function HomeMapView({ spots, currentPosition, onNavigate }) {
+export default function HomeMapView({ spots, currentPosition, onNavigate, recenterTick = 0 }) {
   const containerRef  = useRef(null);
   const mapRef        = useRef(null);
   const markersRef    = useRef({});
@@ -119,6 +119,12 @@ export default function HomeMapView({ spots, currentPosition, onNavigate }) {
       }
     });
   }, [spots, mapReady]);
+
+  /* ── Recenter on demand ─────────────────────────────────── */
+  useEffect(() => {
+    if (!mapReady || !mapRef.current || !currentPosition || recenterTick === 0) return;
+    mapRef.current.flyTo([currentPosition.lat, currentPosition.lng], 17, { duration: 0.8 });
+  }, [recenterTick]); // eslint-disable-line react-hooks/exhaustive-deps
 
   /* ── Sync current position ──────────────────────────────── */
   useEffect(() => {

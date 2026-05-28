@@ -1,29 +1,66 @@
-import { useState } from "react";
-import { Navigation, Trash2 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Navigation, Trash2, Share2 } from "lucide-react";
 import { haversine, formatDistance, accuracyColor } from "../utils/geo.js";
 
+/* ── Helpers ─────────────────────────────────────────────── */
+function formatAge(savedAt) {
+  const m = Math.floor((Date.now() - savedAt) / 60000);
+  if (m < 1)  return "just now";
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60), rem = m % 60;
+  return rem > 0 ? `${h}h ${rem}m ago` : `${h}h ago`;
+}
+
+function walkTime(meters) {
+  if (meters === null) return null;
+  const mins = Math.ceil(meters / 83); // ~5 km/h walking speed
+  return `~${mins} min walk`;
+}
+
+async function shareSpot(spot) {
+  const url  = `https://maps.google.com/?q=${spot.lat},${spot.lng}`;
+  const text = `My parking spot: ${spot.name}`;
+  try {
+    if (window.Capacitor?.isNativePlatform?.()) {
+      const { Share } = await import("@capacitor/share");
+      await Share.share({ title: spot.name, text, url, dialogTitle: "Share parking spot" });
+    } else if (navigator.share) {
+      await navigator.share({ title: spot.name, text, url });
+    } else {
+      await navigator.clipboard.writeText(url);
+    }
+  } catch {}
+}
+
+/* ── Component ───────────────────────────────────────────── */
 export default function SpotCard({ spot, currentPosition, onNavigate, onDelete }) {
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [now, setNow] = useState(Date.now());
+
+  // Update timer every 30 seconds
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 30000);
+    return () => clearInterval(id);
+  }, []);
 
   const distance = currentPosition
     ? haversine(currentPosition.lat, currentPosition.lng, spot.lat, spot.lng)
     : null;
-
-  const savedDate = new Date(spot.savedAt).toLocaleDateString("en-GB", {
-    day: "numeric", month: "short", hour: "2-digit", minute: "2-digit",
-  });
 
   return (
     <div className="spot-card">
       <div className="spot-info">
         <div className="spot-name">{spot.name}</div>
         <div className="spot-meta">
-          <span>{savedDate}</span>
+          <span className="spot-age">{formatAge(spot.savedAt)}</span>
           {spot.accuracy != null && (
-            <span style={{ color: accuracyColor(spot.accuracy) }}>±{Math.round(spot.accuracy)} m</span>
+            <span style={{ color: accuracyColor(spot.accuracy) }}>±{Math.round(spot.accuracy)}m</span>
           )}
           {distance !== null && (
             <span className="spot-distance">{formatDistance(distance)}</span>
+          )}
+          {distance !== null && (
+            <span className="spot-walk">{walkTime(distance)}</span>
           )}
         </div>
       </div>
@@ -38,7 +75,10 @@ export default function SpotCard({ spot, currentPosition, onNavigate, onDelete }
           <>
             <button className="btn btn-primary btn-sm" onClick={() => onNavigate(spot)}>
               <Navigation size={14} />
-              Navigate
+              Go
+            </button>
+            <button className="icon-btn" onClick={() => shareSpot(spot)} title="Share location">
+              <Share2 size={16} />
             </button>
             <button className="icon-btn danger" onClick={() => setConfirmDelete(true)}>
               <Trash2 size={16} />
