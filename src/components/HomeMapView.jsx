@@ -48,9 +48,6 @@ export default function HomeMapView({ spots, currentPosition, onNavigate, recent
         attribution: "© OpenStreetMap",
       }).addTo(map);
 
-      // Zoom control top-right, away from header and save button
-      L.control.zoom({ position: "topright" }).addTo(map);
-
       map.attributionControl.setPrefix("");
       map.setView([45.0, 9.0], 5);
       mapRef.current = map;
@@ -88,20 +85,21 @@ export default function HomeMapView({ spots, currentPosition, onNavigate, recent
       spots.forEach(spot => {
         if (markersRef.current[spot.id]) return;
 
-        // Popup with spot name + Navigate button
+        // Popup — built with DOM API to avoid XSS from unsanitized spot name
         const popupContent = document.createElement("div");
-        popupContent.innerHTML = `
-          <div style="text-align:center;padding:4px 2px">
-            <b style="font-size:14px;display:block;margin-bottom:8px">${spot.name}</b>
-            <button
-              id="nav-${spot.id}"
-              style="background:#2ECC71;color:#000;border:none;padding:7px 18px;
-                     border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;">
-              Navigate
-            </button>
-          </div>`;
-        popupContent.querySelector(`#nav-${spot.id}`)
-          .addEventListener("click", () => onNavigateRef.current?.(spot));
+        popupContent.style.cssText = "text-align:center;padding:4px 2px";
+
+        const nameEl = document.createElement("b");
+        nameEl.style.cssText = "font-size:14px;display:block;margin-bottom:8px";
+        nameEl.textContent = spot.name; // textContent is XSS-safe
+        popupContent.appendChild(nameEl);
+
+        const navBtn = document.createElement("button");
+        navBtn.textContent = "Navigate";
+        navBtn.style.cssText = "background:#2ECC71;color:#000;border:none;padding:7px 18px;" +
+          "border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;";
+        navBtn.addEventListener("click", () => onNavigateRef.current?.(spot));
+        popupContent.appendChild(navBtn);
 
         const marker = L.marker([spot.lat, spot.lng], { icon: makeSpotIcon(L) })
           .addTo(map)

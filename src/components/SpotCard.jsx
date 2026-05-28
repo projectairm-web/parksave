@@ -3,8 +3,8 @@ import { Navigation, Trash2, Share2 } from "lucide-react";
 import { haversine, formatDistance, accuracyColor } from "../utils/geo.js";
 
 /* ── Helpers ─────────────────────────────────────────────── */
-function formatAge(savedAt) {
-  const m = Math.floor((Date.now() - savedAt) / 60000);
+function formatAge(savedAt, now = Date.now()) {
+  const m = Math.floor((now - savedAt) / 60000);
   if (m < 1)  return "just now";
   if (m < 60) return `${m}m ago`;
   const h = Math.floor(m / 60), rem = m % 60;
@@ -14,6 +14,7 @@ function formatAge(savedAt) {
 function walkTime(meters) {
   if (meters === null) return null;
   const mins = Math.ceil(meters / 83); // ~5 km/h walking speed
+  if (mins < 1) return "< 1 min walk";
   return `~${mins} min walk`;
 }
 
@@ -52,7 +53,7 @@ export default function SpotCard({ spot, currentPosition, onNavigate, onDelete }
       <div className="spot-info">
         <div className="spot-name">{spot.name}</div>
         <div className="spot-meta">
-          <span className="spot-age">{formatAge(spot.savedAt)}</span>
+          <span className="spot-age">{formatAge(spot.savedAt, now)}</span>
           {spot.accuracy != null && (
             <span style={{ color: accuracyColor(spot.accuracy) }}>±{Math.round(spot.accuracy)}m</span>
           )}

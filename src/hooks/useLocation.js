@@ -4,6 +4,16 @@ function isNative() {
   return typeof window !== "undefined" && window.Capacitor?.isNativePlatform?.();
 }
 
+async function clearWatch(watchId) {
+  if (watchId == null) return;
+  if (isNative()) {
+    const { Geolocation } = await import("@capacitor/geolocation");
+    Geolocation.clearWatch({ id: watchId });
+  } else {
+    navigator.geolocation?.clearWatch(watchId);
+  }
+}
+
 export function useLocation() {
   const [position, setPosition] = useState(null);
   const [error,    setError]    = useState(null);
@@ -11,6 +21,10 @@ export function useLocation() {
   const watchRef = useRef(null);
 
   const startWatch = async () => {
+    // Always clear any existing watch before starting a new one
+    await clearWatch(watchRef.current);
+    watchRef.current = null;
+
     setLoading(true);
     setError(null);
 
@@ -58,16 +72,7 @@ export function useLocation() {
 
   useEffect(() => {
     startWatch();
-    return () => {
-      if (watchRef.current == null) return;
-      if (isNative()) {
-        import("@capacitor/geolocation").then(({ Geolocation }) =>
-          Geolocation.clearWatch({ id: watchRef.current })
-        );
-      } else {
-        navigator.geolocation?.clearWatch(watchRef.current);
-      }
-    };
+    return () => { clearWatch(watchRef.current); };
   }, []);
 
   return { position, error, loading, requestPermission };
