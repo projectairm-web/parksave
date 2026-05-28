@@ -20,6 +20,7 @@
   --radius-sm:   8px;
   --compass-ring: #30363D;
   --compass-bg:   #161B22;
+  --bottom-tabs-h: 64px;
 }
 
 html, body, #root {
@@ -31,13 +32,28 @@ html, body, #root {
   overscroll-behavior: none;
 }
 
-.screen { display: flex; flex-direction: column; height: 100dvh; overflow: hidden; }
+/* ── App shell ───────────────────────────────────────────── */
+.screen {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+/* Tab screens sit above the bottom nav */
+.tab-screen {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
+}
 
 /* ── Header ──────────────────────────────────────────────── */
 .app-header {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 16px 20px 12px;
-  padding-top: calc(16px + env(safe-area-inset-top, 0px));
+  padding: 14px 20px 12px;
+  padding-top: calc(14px + env(safe-area-inset-top, 0px));
   flex-shrink: 0;
   border-bottom: 1px solid var(--border);
   background: var(--surface);
@@ -46,22 +62,78 @@ html, body, #root {
 .app-name   { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; }
 .spot-count { font-size: 13px; color: var(--text-muted); }
 
-/* ── Home map ────────────────────────────────────────────── */
-.home-map-container {
-  height: 50vh;
+/* ── Bottom tabs ─────────────────────────────────────────── */
+.bottom-tabs {
+  display: flex;
   flex-shrink: 0;
-  border-bottom: 1px solid var(--border);
+  height: calc(var(--bottom-tabs-h) + env(safe-area-inset-bottom, 0px));
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+}
+.bottom-tab {
+  flex: 1;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 4px;
+  border: none; background: none;
+  color: var(--text-muted);
+  font-size: 11px; font-weight: 600; font-family: inherit;
+  cursor: pointer;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  transition: color 0.15s;
+  letter-spacing: 0.2px;
+}
+.bottom-tab.active        { color: var(--accent); }
+.bottom-tab:hover         { color: var(--text); }
+
+/* ── Map tab ─────────────────────────────────────────────── */
+.map-tab { position: relative; }
+
+.map-full {
+  flex: 1;
+  min-height: 0;
+  position: relative;
 }
 
-/* ── Spot list ───────────────────────────────────────────── */
+.map-fill {
+  width: 100%;
+  height: 100%;
+}
+
+/* Floating save button */
+.fab-wrap {
+  position: absolute;
+  bottom: 16px;
+  left: 16px; right: 16px;
+  z-index: 1000;
+}
+.btn-save {
+  width: 100%; height: 54px;
+  border-radius: 999px; border: none;
+  background: var(--accent); color: #000;
+  font-size: 16px; font-weight: 700; font-family: inherit;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(46,204,113,0.4);
+  transition: filter 0.15s;
+}
+.btn-save:hover  { filter: brightness(1.1); }
+.btn-save:active { filter: brightness(0.9); }
+
+/* ── Spots tab ───────────────────────────────────────────── */
+.spots-tab { }
+
 .spot-list {
-  flex: 1; overflow-y: auto;
-  min-height: 0;          /* prevents overflow on small screens */
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
   padding: 12px 16px;
   display: flex; flex-direction: column; gap: 10px;
 }
+
 .empty-state {
-  flex: 1; display: flex; flex-direction: column;
+  flex: 1;
+  display: flex; flex-direction: column;
   align-items: center; justify-content: center;
   gap: 12px; padding: 40px 20px; text-align: center;
 }
@@ -80,46 +152,50 @@ html, body, #root {
 .spot-distance { color: var(--accent); font-weight: 600; }
 .spot-actions  { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
 
-/* ── Save button ─────────────────────────────────────────── */
-.save-btn-wrap {
-  padding: 16px;
-  padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
-  flex-shrink: 0; background: var(--bg); border-top: 1px solid var(--border);
-}
-.btn-save {
-  width: 100%; height: 58px; border-radius: 999px; border: none;
-  background: var(--accent); color: #000;
-  font-size: 16px; font-weight: 700; font-family: inherit;
-  display: flex; align-items: center; justify-content: center; gap: 8px;
-  cursor: pointer; box-shadow: 0 0 24px rgba(46,204,113,0.25);
-  transition: filter 0.15s;
-}
-.btn-save:hover  { filter: brightness(1.1); }
-.btn-save:active { filter: brightness(0.9); }
-
 /* ── Navigate screen ─────────────────────────────────────── */
-.navigate-screen { background: var(--bg); }
+.navigate-screen {
+  display: flex; flex-direction: column;
+  height: 100dvh; overflow: hidden;
+  background: var(--bg);
+}
 .nav-topbar {
   display: flex; align-items: center; justify-content: space-between;
   padding: 14px 16px;
   padding-top: calc(14px + env(safe-area-inset-top, 0px));
   border-bottom: 1px solid var(--border); background: var(--surface); flex-shrink: 0;
 }
-.nav-title { display: flex; align-items: center; gap: 6px; font-size: 15px; font-weight: 600; }
+.nav-title        { display: flex; align-items: center; gap: 6px; font-size: 15px; font-weight: 600; }
+.nav-topbar-dist  { font-size: 13px; font-weight: 600; color: var(--accent); }
 .nav-content {
   flex: 1; display: flex; flex-direction: column;
   align-items: center; justify-content: center;
   gap: 24px; padding: 24px; overflow: hidden;
 }
-.nav-loading  { color: var(--text-muted); font-size: 15px; }
 .nav-coords   { font-size: 11px; color: var(--text-subtle); }
 .compass-note { font-size: 11px; color: var(--text-subtle); margin-top: 2px; }
 
-/* ── Compass ─────────────────────────────────────────────── */
-.compass-wrap { position: relative; display: flex; align-items: center; justify-content: center; }
-.compass-unavailable { position: absolute; bottom: -24px; font-size: 11px; color: var(--text-subtle); white-space: nowrap; }
+/* ── Map in navigate screen ──────────────────────────────── */
+.map-wrap {
+  flex: 1; position: relative; overflow: hidden; min-height: 0;
+}
+.map-container { width: 100%; height: 100%; }
 
-/* ── Arrived ─────────────────────────────────────────────── */
+/* ── Navigate bottom bar ─────────────────────────────────── */
+.nav-bottom-bar {
+  display: flex; align-items: center; gap: 16px;
+  padding: 14px 20px;
+  padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+  background: var(--surface); border-top: 1px solid var(--border); flex-shrink: 0;
+}
+.nav-bottom-info  { flex: 1; }
+.nav-distance-lg  { font-size: 32px; font-weight: 300; font-variant-numeric: tabular-nums; letter-spacing: -0.5px; }
+
+/* ── Arrived overlay ─────────────────────────────────────── */
+.arrived-overlay {
+  position: absolute; inset: 0; z-index: 1000;
+  background: rgba(13,17,23,0.75);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px;
+}
 .arrived      { display: flex; flex-direction: column; align-items: center; gap: 16px; }
 .arrived-icon {
   width: 100px; height: 100px; border-radius: 50%;
@@ -129,10 +205,14 @@ html, body, #root {
 }
 .arrived-text { font-size: 24px; font-weight: 700; color: var(--accent); }
 
+/* ── Compass ─────────────────────────────────────────────── */
+.compass-wrap { position: relative; display: flex; align-items: center; justify-content: center; }
+.compass-unavailable { position: absolute; bottom: -24px; font-size: 11px; color: var(--text-subtle); white-space: nowrap; }
+
 /* ── Modal ───────────────────────────────────────────────── */
 .modal-overlay {
   position: fixed; inset: 0; background: rgba(0,0,0,0.65);
-  z-index: 100; display: flex; align-items: flex-end; justify-content: center;
+  z-index: 500; display: flex; align-items: flex-end; justify-content: center;
 }
 .modal {
   background: var(--surface); border-radius: var(--radius) var(--radius) 0 0;
@@ -180,31 +260,8 @@ html, body, #root {
 .icon-btn:hover        { background: var(--surface-2); color: var(--text); }
 .icon-btn.danger:hover { background: var(--danger-dim); color: var(--danger); }
 
-/* ── Permission prompt ───────────────────────────────────── */
-.permission-prompt { display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 32px 24px; text-align: center; }
-.permission-title  { font-size: 17px; font-weight: 700; }
-.permission-desc   { font-size: 14px; color: var(--text-muted); max-width: 260px; line-height: 1.5; }
-
-/* ── Spinner ─────────────────────────────────────────────── */
-@keyframes spin { to { transform: rotate(360deg); } }
-.spin { animation: spin 1s linear infinite; }
-
-/* ── Map ─────────────────────────────────────────────────── */
-.map-wrap {
-  flex: 1;
-  position: relative;
-  overflow: hidden;
-}
-.map-container {
-  width: 100%;
-  height: 100%;
-}
-
-/* Override Leaflet tile layer to dark-tinted on dark bg */
-.leaflet-container {
-  background: var(--surface-2);
-  font-family: inherit;
-}
+/* ── Map markers ─────────────────────────────────────────── */
+.leaflet-container { background: var(--surface-2); font-family: inherit; }
 .leaflet-control-attribution {
   font-size: 9px !important;
   background: rgba(13,17,23,0.7) !important;
@@ -212,53 +269,32 @@ html, body, #root {
 }
 .leaflet-control-attribution a { color: var(--text-subtle) !important; }
 
-/* Spot marker */
 .map-pin-spot {
-  width: 38px; height: 38px; border-radius: 50%;
+  width: 36px; height: 36px; border-radius: 50%;
   background: var(--accent); color: #000;
   display: flex; align-items: center; justify-content: center;
   font-size: 14px; font-weight: 800;
   border: 3px solid #fff;
   box-shadow: 0 2px 8px rgba(0,0,0,0.5);
 }
-
-/* Current position marker with pulse */
 .map-pin-current {
   width: 22px; height: 22px; border-radius: 50%;
-  background: #3B82F6;
-  border: 3px solid #fff;
+  background: #3B82F6; border: 3px solid #fff;
   box-shadow: 0 2px 6px rgba(0,0,0,0.4);
   position: relative;
 }
 .map-pin-pulse {
-  position: absolute; inset: -6px;
-  border-radius: 50%;
+  position: absolute; inset: -6px; border-radius: 50%;
   background: rgba(59,130,246,0.25);
   animation: pulse 2s ease-out infinite;
 }
-@keyframes pulse {
-  0%   { transform: scale(1); opacity: 0.8; }
-  100% { transform: scale(2); opacity: 0; }
-}
 
-/* Arrived overlay on map */
-.arrived-overlay {
-  position: absolute; inset: 0;
-  background: rgba(13,17,23,0.75);
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  gap: 16px; z-index: 1000;
-}
+/* ── Permission prompt ───────────────────────────────────── */
+.permission-prompt { display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 32px 24px; text-align: center; }
+.permission-title  { font-size: 17px; font-weight: 700; }
+.permission-desc   { font-size: 14px; color: var(--text-muted); max-width: 260px; line-height: 1.5; }
 
-/* ── Navigate bottom bar ─────────────────────────────────── */
-.nav-bottom-bar {
-  display: flex; align-items: center; gap: 16px;
-  padding: 14px 20px;
-  padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px));
-  background: var(--surface);
-  border-top: 1px solid var(--border);
-  flex-shrink: 0;
-}
-.nav-bottom-info   { flex: 1; }
-.nav-distance-lg   { font-size: 32px; font-weight: 300; font-variant-numeric: tabular-nums; letter-spacing: -0.5px; }
-.nav-topbar-dist   { font-size: 13px; font-weight: 600; color: var(--accent); }
+/* ── Animations ──────────────────────────────────────────── */
+@keyframes spin  { to { transform: rotate(360deg); } }
+@keyframes pulse { 0% { transform: scale(1); opacity: 0.8; } 100% { transform: scale(2); opacity: 0; } }
+.spin { animation: spin 1s linear infinite; }

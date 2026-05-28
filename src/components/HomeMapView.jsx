@@ -7,7 +7,7 @@ function makeSpotIcon(L) {
     className: "",
     iconSize: [36, 36],
     iconAnchor: [18, 18],
-    popupAnchor: [0, -20],
+    popupAnchor: [0, -22],
   });
 }
 
@@ -20,13 +20,17 @@ function makeCurrentIcon(L) {
   });
 }
 
-export default function HomeMapView({ spots, currentPosition }) {
+export default function HomeMapView({ spots, currentPosition, onNavigate }) {
   const containerRef  = useRef(null);
   const mapRef        = useRef(null);
   const markersRef    = useRef({});
   const currentMkrRef = useRef(null);
   const fittedRef     = useRef(false);
-  const [mapReady, setMapReady] = useState(false); // triggers dependent effects after async init
+  const [mapReady, setMapReady] = useState(false);
+
+  // Keep a ref to latest onNavigate so popup buttons always call the current version
+  const onNavigateRef = useRef(onNavigate);
+  useEffect(() => { onNavigateRef.current = onNavigate; }, [onNavigate]);
 
   /* ── Init map once ──────────────────────────────────────── */
   useEffect(() => {
@@ -44,7 +48,7 @@ export default function HomeMapView({ spots, currentPosition }) {
         attribution: "© OpenStreetMap",
       }).addTo(map);
 
-      map.attributionControl.setPrefix(""); // remove "Leaflet" branding link
+      map.attributionControl.setPrefix("");
       map.setView([45.0, 9.0], 5);
       mapRef.current = map;
       setMapReady(true);
@@ -61,7 +65,7 @@ export default function HomeMapView({ spots, currentPosition }) {
     };
   }, []);
 
-  /* ── Sync spot markers (runs after mapReady flips to true) ── */
+  /* ── Sync spot markers ──────────────────────────────────── */
   useEffect(() => {
     if (!mapReady || !mapRef.current) return;
 
@@ -80,23 +84,40 @@ export default function HomeMapView({ spots, currentPosition }) {
       // Add markers for new spots
       spots.forEach(spot => {
         if (markersRef.current[spot.id]) return;
+
+        // Popup with spot name + Navigate button
+        const popupContent = document.createElement("div");
+        popupContent.innerHTML = `
+          <div style="text-align:center;padding:4px 2px">
+            <b style="font-size:14px;display:block;margin-bottom:8px">${spot.name}</b>
+            <button
+              id="nav-${spot.id}"
+              style="background:#2ECC71;color:#000;border:none;padding:7px 18px;
+                     border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;">
+              Navigate
+            </button>
+          </div>`;
+        popupContent.querySelector(`#nav-${spot.id}`)
+          .addEventListener("click", () => onNavigateRef.current?.(spot));
+
         const marker = L.marker([spot.lat, spot.lng], { icon: makeSpotIcon(L) })
           .addTo(map)
-          .bindPopup(`<b style="font-size:13px">${spot.name}</b>`, { closeButton: false });
+          .bindPopup(popupContent, { closeButton: false, minWidth: 140 });
+
         marker.on("click", () => marker.openPopup());
         markersRef.current[spot.id] = marker;
       });
 
-      // Fit bounds to show all spots — only once
+      // Fit to show all spots — only once
       if (spots.length > 0 && !fittedRef.current) {
         const bounds = L.latLngBounds(spots.map(s => [s.lat, s.lng]));
-        map.fitBounds(bounds, { padding: [48, 48], maxZoom: 17 });
+        map.fitBounds(bounds, { padding: [60, 60], maxZoom: 17 });
         fittedRef.current = true;
       }
     });
-  }, [spots, mapReady]); // mapReady in deps ensures this runs after map is created
+  }, [spots, mapReady]);
 
-  /* ── Sync current position (runs after mapReady flips) ───── */
+  /* ── Sync current position ──────────────────────────────── */
   useEffect(() => {
     if (!mapReady || !mapRef.current || !currentPosition) return;
 
@@ -111,12 +132,13 @@ export default function HomeMapView({ spots, currentPosition }) {
         currentMkrRef.current.setLatLng(latlng);
       }
 
-      // If no spots, center on user position
-      if (spots.length === 0) {
+      // If no spots yet, center on user
+      if (spots.length === 0 && !fittedRef.current) {
         mapRef.current.setView(latlng, 16);
+        fittedRef.current = true;
       }
     });
   }, [currentPosition, mapReady, spots.length]);
 
-  return <div ref={containerRef} className="home-map-container" />;
+  return <div ref={containerRef} className="map-fill" />;
 }
