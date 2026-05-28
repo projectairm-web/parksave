@@ -1,4 +1,5 @@
 import { ArrowLeft, MapPin } from "lucide-react";
+import MapView from "./MapView.jsx";
 import CompassArrow from "./CompassArrow.jsx";
 import PermissionPrompt from "./PermissionPrompt.jsx";
 import { useLocation } from "../hooks/useLocation.js";
@@ -23,46 +24,59 @@ export default function NavigateScreen({ spot, onBack }) {
 
   return (
     <div className="screen navigate-screen">
+
+      {/* Top bar */}
       <div className="nav-topbar">
         <button className="icon-btn" onClick={onBack}><ArrowLeft size={20} /></button>
         <div className="nav-title">
           <MapPin size={14} color="var(--accent)" />
           {spot.name}
         </div>
-        <div style={{ width: 36 }} />
+        {distance !== null && (
+          <span className="nav-topbar-dist">{formatDistance(distance)}</span>
+        )}
       </div>
 
-      <div className="nav-content">
-        {gpsError === "denied" ? (
+      {/* Map or fallback */}
+      {gpsError === "denied" ? (
+        <div className="nav-content">
           <PermissionPrompt onRetry={requestPermission} />
-        ) : loading ? (
-          <p className="nav-loading">Getting GPS fix…</p>
-        ) : arrived ? (
-          <div className="arrived">
-            <div className="arrived-icon">✓</div>
-            <div className="arrived-text">You&apos;re here!</div>
+        </div>
+      ) : (
+        <>
+          <div className="map-wrap">
+            <MapView currentPosition={position} spot={spot} />
+
+            {arrived && (
+              <div className="arrived-overlay">
+                <div className="arrived-icon">✓</div>
+                <div className="arrived-text">You&apos;re here!</div>
+              </div>
+            )}
           </div>
-        ) : (
-          <>
+
+          {/* Bottom floating bar: compass + distance */}
+          <div className="nav-bottom-bar">
             <CompassArrow
               rotation={rotation}
               unavailable={!compassSupported || heading === null}
-              size={240}
+              size={72}
             />
-            <div className="nav-distance">
-              {distance !== null ? formatDistance(distance) : "—"}
+            <div className="nav-bottom-info">
+              <div className="nav-distance-lg">
+                {loading ? "Getting fix…" : distance !== null ? formatDistance(distance) : "—"}
+              </div>
+              <div className="nav-coords">
+                {spot.lat.toFixed(5)}, {spot.lng.toFixed(5)}
+              </div>
+              {!compassSupported && (
+                <div className="compass-note">Compass unavailable</div>
+              )}
             </div>
-            {!compassSupported && (
-              <p className="compass-note">
-                Compass unavailable — arrow points toward spot from North
-              </p>
-            )}
-            <div className="nav-coords">
-              {spot.lat.toFixed(5)}, {spot.lng.toFixed(5)}
-            </div>
-          </>
-        )}
-      </div>
+          </div>
+        </>
+      )}
+
     </div>
   );
 }
