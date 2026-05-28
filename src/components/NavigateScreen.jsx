@@ -2,13 +2,12 @@ import { ArrowLeft, MapPin } from "lucide-react";
 import MapView from "./MapView.jsx";
 import CompassArrow from "./CompassArrow.jsx";
 import PermissionPrompt from "./PermissionPrompt.jsx";
-import { useLocation } from "../hooks/useLocation.js";
 import { useCompass } from "../hooks/useCompass.js";
 import { haversine, bearing, formatDistance } from "../utils/geo.js";
 import { ARRIVED_THRESHOLD_M } from "../constants/index.js";
 
-export default function NavigateScreen({ spot, onBack }) {
-  const { position, error: gpsError, loading, requestPermission } = useLocation();
+export default function NavigateScreen({ spot, onBack, locationState }) {
+  const { position, error: gpsError, requestPermission } = locationState;
   const { heading, supported: compassSupported } = useCompass();
 
   let distance = null;
@@ -25,7 +24,6 @@ export default function NavigateScreen({ spot, onBack }) {
   return (
     <div className="screen navigate-screen">
 
-      {/* Top bar */}
       <div className="nav-topbar">
         <button className="icon-btn" onClick={onBack}><ArrowLeft size={20} /></button>
         <div className="nav-title">
@@ -37,7 +35,6 @@ export default function NavigateScreen({ spot, onBack }) {
         )}
       </div>
 
-      {/* Map or fallback */}
       {gpsError === "denied" ? (
         <div className="nav-content">
           <PermissionPrompt onRetry={requestPermission} />
@@ -46,7 +43,6 @@ export default function NavigateScreen({ spot, onBack }) {
         <>
           <div className="map-wrap">
             <MapView currentPosition={position} spot={spot} />
-
             {arrived && (
               <div className="arrived-overlay">
                 <div className="arrived-icon">✓</div>
@@ -55,7 +51,6 @@ export default function NavigateScreen({ spot, onBack }) {
             )}
           </div>
 
-          {/* Bottom floating bar: compass + distance */}
           <div className="nav-bottom-bar">
             <CompassArrow
               rotation={rotation}
@@ -64,7 +59,7 @@ export default function NavigateScreen({ spot, onBack }) {
             />
             <div className="nav-bottom-info">
               <div className="nav-distance-lg">
-                {loading ? "Getting fix…" : distance !== null ? formatDistance(distance) : "—"}
+                {distance !== null ? formatDistance(distance) : "Getting fix…"}
               </div>
               <div className="nav-coords">
                 {spot.lat.toFixed(5)}, {spot.lng.toFixed(5)}

@@ -46,9 +46,17 @@ html, body, #root {
 .app-name   { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; }
 .spot-count { font-size: 13px; color: var(--text-muted); }
 
+/* ── Home map ────────────────────────────────────────────── */
+.home-map-container {
+  height: 280px;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--border);
+}
+
 /* ── Spot list ───────────────────────────────────────────── */
 .spot-list {
   flex: 1; overflow-y: auto;
+  min-height: 0;          /* prevents overflow on small screens */
   padding: 12px 16px;
   display: flex; flex-direction: column; gap: 10px;
 }
