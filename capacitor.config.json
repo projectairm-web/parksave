@@ -1,5 +1,16 @@
 {
   "appId": "com.parksave.app",
   "appName": "ParkSave",
-  "webDir": "dist"
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https"
+  },
+  "android": {
+    "backgroundColor": "#0D1117"
+  },
+  "plugins": {
+    "Geolocation": {
+      "iosLocationWhenInUseUsageDescription": "ParkSave needs your location to save and navigate to parking spots."
+    }
+  }
 }
