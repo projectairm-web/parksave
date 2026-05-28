@@ -44,9 +44,10 @@ export default function HomeMapView({ spots, currentPosition }) {
         attribution: "© OpenStreetMap",
       }).addTo(map);
 
+      map.attributionControl.setPrefix(""); // remove "Leaflet" branding link
       map.setView([45.0, 9.0], 5);
       mapRef.current = map;
-      setMapReady(true); // signals spots + position effects to run
+      setMapReady(true);
     });
 
     return () => {

@@ -44,7 +44,7 @@ export default function MapView({ currentPosition, spot }) {
         attribution: "© OpenStreetMap",
       }).addTo(map);
 
-      // Spot marker is static — place it immediately
+      map.attributionControl.setPrefix(""); // remove "Leaflet" branding link
       spotMkrRef.current = L.marker([spot.lat, spot.lng], { icon: makeSpotIcon(L) }).addTo(map);
       map.setView([spot.lat, spot.lng], 16);
 
