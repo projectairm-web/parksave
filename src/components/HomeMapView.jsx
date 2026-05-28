@@ -39,7 +39,7 @@ export default function HomeMapView({ spots, currentPosition, onNavigate }) {
       if (cancelled || !containerRef.current || mapRef.current) return;
 
       const map = L.map(containerRef.current, {
-        zoomControl: true,
+        zoomControl: false,       // add manually at top-right
         attributionControl: true,
       });
 
@@ -47,6 +47,9 @@ export default function HomeMapView({ spots, currentPosition, onNavigate }) {
         maxZoom: 19,
         attribution: "© OpenStreetMap",
       }).addTo(map);
+
+      // Zoom control top-right, away from header and save button
+      L.control.zoom({ position: "topright" }).addTo(map);
 
       map.attributionControl.setPrefix("");
       map.setView([45.0, 9.0], 5);

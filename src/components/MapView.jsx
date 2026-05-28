@@ -38,6 +38,7 @@ export default function MapView({ currentPosition, spot }) {
         zoomControl: false,
         attributionControl: true,
       });
+      L.control.zoom({ position: "bottomleft" }).addTo(map);
 
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         maxZoom: 19,

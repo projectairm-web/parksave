@@ -6,25 +6,31 @@ export default function MapTab({ spots, locationState, onNavigate, onSave }) {
 
   return (
     <div className="tab-screen map-tab">
-      <header className="app-header">
-        <div className="app-brand">
-          <SquareParking size={22} color="var(--accent)" />
-          <span className="app-name">ParkSave</span>
-        </div>
-      </header>
 
-      {/* Full-screen map */}
+      {/* Map fills the entire screen area */}
       <div className="map-full">
         <HomeMapView spots={spots} currentPosition={position} onNavigate={onNavigate} />
       </div>
 
-      {/* Floating save button above bottom tabs */}
-      <div className="fab-wrap">
+      {/* Frosted header overlaid on map */}
+      <header className="map-overlay-header">
+        <div className="app-brand">
+          <SquareParking size={20} color="var(--accent)" />
+          <span className="app-name">ParkSave</span>
+        </div>
+        {spots.length > 0 && (
+          <span className="spot-count">{spots.length} spot{spots.length !== 1 ? "s" : ""}</span>
+        )}
+      </header>
+
+      {/* Bottom gradient scrim + save button */}
+      <div className="map-bottom-overlay">
         <button className="btn-save" onClick={onSave}>
           <MapPin size={20} />
           Save Parking Spot
         </button>
       </div>
+
     </div>
   );
 }
