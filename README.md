@@ -1,16 +1,84 @@
-# React + Vite
+# ParkSave
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A GPS parking spot saver app built with React + Vite + Capacitor for Android.
 
-Currently, two official plugins are available:
+Save your parking location with one tap, then navigate back to it with a live map and compass.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+---
 
-## React Compiler
+## Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Map
+- Full-screen OpenStreetMap map as the home screen
+- All saved spots shown as markers — tap a marker to see the name and navigate
+- Live blue dot showing your current GPS position
+- **Recenter button** — flies the map back to your location after panning
+- Dark-themed map controls and popups
 
-## Expanding the ESLint configuration
+### Save a Spot
+- One tap to save your current GPS coordinates
+- Name the spot (e.g. Mall, Airport, Level B2)
+- GPS accuracy indicator (green / yellow / red) before confirming
+- Duplicate name detection
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### Spots List
+- All saved spots in a scrollable list
+- **Parked timer** — shows how long ago you parked (e.g. "2h 15m ago"), updates every 30 seconds
+- **Walking time estimate** — approximate walk time based on current distance (e.g. "~8 min walk")
+- **Distance from current position** — live, updates as you move
+- **Share** — sends a Google Maps link via Android share sheet (WhatsApp, Gmail, etc.)
+- Swipe-to-confirm delete
+
+### Navigate to a Spot
+- Full-screen map centered on the route between you and the spot
+- Dashed green line from your position to the spot
+- **Compass arrow** — rotates in real time pointing toward the spot
+- **Live distance** displayed in large text
+- **"You're here!" overlay** when you arrive within 10 metres, with a one-tap option to remove the spot
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| UI | React 18 + Vite 8 |
+| Map | Leaflet + OpenStreetMap (no API key) |
+| GPS | @capacitor/geolocation |
+| Compass | DeviceOrientationEvent (web API) |
+| Share | @capacitor/share |
+| Storage | localStorage (offline, no backend) |
+| Android | Ionic Capacitor 8 |
+
+---
+
+## Getting Started
+
+### Web (browser preview)
+```bash
+npm install
+npm run dev
+```
+
+### Android
+```bash
+npm run build
+npx cap sync android
+# Open android/ in Android Studio, then Run
+```
+
+### Requirements
+- Node.js 18+
+- Android Studio (for Android builds)
+- A device or emulator with GPS support
+
+---
+
+## Permissions
+
+| Permission | Why |
+|---|---|
+| `ACCESS_FINE_LOCATION` | Save and navigate to parking spots |
+| `ACCESS_COARSE_LOCATION` | Fallback GPS |
+
+No account, no cloud, no tracking. All data stays on your device.
