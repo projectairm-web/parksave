@@ -1,14 +1,37 @@
-import { ArrowLeft, MapPin, Trash2 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { ArrowLeft, MapPin, Trash2, Navigation } from "lucide-react";
 import MapView from "./MapView.jsx";
 import CompassArrow from "./CompassArrow.jsx";
 import PermissionPrompt from "./PermissionPrompt.jsx";
 import { useCompass } from "../hooks/useCompass.js";
-import { haversine, bearing, formatDistance } from "../utils/geo.js";
+import { haversine, bearing, formatDistance, formatTimeLeft } from "../utils/geo.js";
 import { ARRIVED_THRESHOLD_M } from "../constants/index.js";
+
+function openGoogleMaps(spot, position) {
+  const params = new URLSearchParams({
+    api: "1",
+    destination: `${spot.lat},${spot.lng}`,
+    travelmode: "walking",
+  });
+  if (position) params.set("origin", `${position.lat},${position.lng}`);
+  window.open(`https://www.google.com/maps/dir/?${params}`, "_blank");
+}
+
+function TimerBadge({ expiresAt }) {
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 30000);
+    return () => clearInterval(id);
+  }, []);
+  const tl = formatTimeLeft(expiresAt, now);
+  if (!tl) return null;
+  return <span className="nav-timer-badge" style={{ color: tl.color }}>{tl.text}</span>;
+}
 
 export default function NavigateScreen({ spot, onBack, onDelete, locationState }) {
   const { position, error: gpsError, requestPermission } = locationState;
   const { heading, supported: compassSupported } = useCompass();
+  const arrivedFiredRef = useRef(false);
 
   let distance = null;
   let rotation = 0;
@@ -20,6 +43,24 @@ export default function NavigateScreen({ spot, onBack, onDelete, locationState }
     rotation  = heading !== null ? (dir - heading + 360) % 360 : dir;
     arrived   = distance < ARRIVED_THRESHOLD_M;
   }
+
+  // Haptic feedback on arrival
+  useEffect(() => {
+    if (arrived && !arrivedFiredRef.current) {
+      arrivedFiredRef.current = true;
+      (async () => {
+        try {
+          if (window.Capacitor?.isNativePlatform?.()) {
+            const mod = await import("@capacitor/haptics");
+            await mod.Haptics.impact({ style: mod.ImpactStyle.Heavy });
+          } else {
+            navigator.vibrate?.([200, 100, 200]);
+          }
+        } catch {}
+      })();
+    }
+    if (!arrived) arrivedFiredRef.current = false;
+  }, [arrived]);
 
   const handleDelete = () => {
     onDelete(spot.id);
@@ -35,9 +76,12 @@ export default function NavigateScreen({ spot, onBack, onDelete, locationState }
           <MapPin size={14} color="var(--accent)" />
           {spot.name}
         </div>
-        {distance !== null && (
-          <span className="nav-topbar-dist">{formatDistance(distance)}</span>
-        )}
+        <div className="nav-topbar-right">
+          {distance !== null && (
+            <span className="nav-topbar-dist">{formatDistance(distance)}</span>
+          )}
+          {spot.expiresAt && <TimerBadge expiresAt={spot.expiresAt} />}
+        </div>
       </div>
 
       {gpsError === "denied" ? (
@@ -49,7 +93,6 @@ export default function NavigateScreen({ spot, onBack, onDelete, locationState }
           <div className="map-wrap">
             <MapView currentPosition={position} spot={spot} />
 
-            {/* Arrived overlay with delete option */}
             {arrived && (
               <div className="arrived-overlay">
                 <div className="arrived-icon">✓</div>
@@ -83,6 +126,13 @@ export default function NavigateScreen({ spot, onBack, onDelete, locationState }
               {!compassSupported && (
                 <div className="compass-note">Compass unavailable</div>
               )}
+              <button
+                className="btn-open-maps"
+                onClick={() => openGoogleMaps(spot, position)}
+              >
+                <Navigation size={14} />
+                Open in Google Maps
+              </button>
             </div>
           </div>
         </>

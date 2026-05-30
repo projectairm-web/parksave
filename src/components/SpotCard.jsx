@@ -1,19 +1,11 @@
 import { useState, useEffect } from "react";
 import { Navigation, Trash2, Share2 } from "lucide-react";
-import { haversine, formatDistance, accuracyColor } from "../utils/geo.js";
-
-/* ── Helpers ─────────────────────────────────────────────── */
-function formatAge(savedAt, now = Date.now()) {
-  const m = Math.floor((now - savedAt) / 60000);
-  if (m < 1)  return "just now";
-  if (m < 60) return `${m}m ago`;
-  const h = Math.floor(m / 60), rem = m % 60;
-  return rem > 0 ? `${h}h ${rem}m ago` : `${h}h ago`;
-}
+import { haversine, formatDistance, accuracyColor, formatAge, formatTimeLeft } from "../utils/geo.js";
+import { SPOT_TYPES } from "../constants/index.js";
 
 function walkTime(meters) {
   if (meters === null) return null;
-  const mins = Math.ceil(meters / 83); // ~5 km/h walking speed
+  const mins = Math.ceil(meters / 83);
   if (mins < 1) return "< 1 min walk";
   return `~${mins} min walk`;
 }
@@ -33,12 +25,10 @@ async function shareSpot(spot) {
   } catch {}
 }
 
-/* ── Component ───────────────────────────────────────────── */
 export default function SpotCard({ spot, currentPosition, onNavigate, onDelete }) {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [now, setNow] = useState(Date.now());
 
-  // Update timer every 30 seconds
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 30000);
     return () => clearInterval(id);
@@ -48,10 +38,27 @@ export default function SpotCard({ spot, currentPosition, onNavigate, onDelete }
     ? haversine(currentPosition.lat, currentPosition.lng, spot.lat, spot.lng)
     : null;
 
+  const timeLeft  = formatTimeLeft(spot.expiresAt, now);
+  const spotType  = SPOT_TYPES.find(t => t.id === spot.type);
+
   return (
     <div className="spot-card">
+      {spot.photo && (
+        <img src={spot.photo} className="spot-photo" alt="" />
+      )}
+
       <div className="spot-info">
-        <div className="spot-name">{spot.name}</div>
+        <div className="spot-name-row">
+          <span className="spot-name">{spot.name}</span>
+          {spotType && (
+            <span className="spot-type-badge">{spotType.emoji} {spotType.label}</span>
+          )}
+        </div>
+
+        {spot.notes && (
+          <div className="spot-notes">{spot.notes}</div>
+        )}
+
         <div className="spot-meta">
           <span className="spot-age">{formatAge(spot.savedAt, now)}</span>
           {spot.accuracy != null && (
@@ -62,6 +69,9 @@ export default function SpotCard({ spot, currentPosition, onNavigate, onDelete }
           )}
           {distance !== null && (
             <span className="spot-walk">{walkTime(distance)}</span>
+          )}
+          {timeLeft && (
+            <span style={{ color: timeLeft.color, fontWeight: 600 }}>{timeLeft.text}</span>
           )}
         </div>
       </div>

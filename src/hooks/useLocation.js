@@ -56,7 +56,10 @@ export function useLocation() {
           setPosition({ lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy });
           setLoading(false);
         },
-        () => { setError("unavailable"); setLoading(false); },
+        (err) => {
+          setError(err.code === 1 ? "denied" : "unavailable");
+          setLoading(false);
+        },
         { enableHighAccuracy: true, timeout: 10000 }
       );
     }
@@ -67,7 +70,7 @@ export function useLocation() {
       const { Geolocation } = await import("@capacitor/geolocation");
       await Geolocation.requestPermissions();
     }
-    startWatch();
+    await startWatch();
   };
 
   useEffect(() => {

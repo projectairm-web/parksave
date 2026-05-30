@@ -21,6 +21,8 @@ export function useCompass() {
         raw = (360 - e.alpha) % 360;
       }
       if (raw === null) return;
+      // Re-enable if the 5s timeout had already fired (e.g. slow device wake)
+      setSupported(true);
       const prev     = prevRef.current ?? raw;
       const smoothed = 0.85 * prev + 0.15 * raw;
       prevRef.current = smoothed;

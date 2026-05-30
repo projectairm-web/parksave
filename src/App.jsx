@@ -1,26 +1,25 @@
 import { useState } from "react";
-import MapTab        from "./components/MapTab.jsx";
-import SpotsTab      from "./components/SpotsTab.jsx";
+import MapTab         from "./components/MapTab.jsx";
+import SpotsTab       from "./components/SpotsTab.jsx";
 import NavigateScreen from "./components/NavigateScreen.jsx";
-import BottomTabs    from "./components/BottomTabs.jsx";
-import SaveModal     from "./components/SaveModal.jsx";
+import BottomTabs     from "./components/BottomTabs.jsx";
+import SaveModal      from "./components/SaveModal.jsx";
 import { useLocation } from "./hooks/useLocation.js";
 import { useSpots }    from "./hooks/useSpots.js";
 
 export default function App() {
-  const [tab,         setTab]         = useState("map");       // "map" | "spots"
-  const [navigateTo,  setNavigateTo]  = useState(null);        // spot | null
-  const [showSave,    setShowSave]    = useState(false);
+  const [tab,        setTab]        = useState("map");
+  const [navigateTo, setNavigateTo] = useState(null);
+  const [showSave,   setShowSave]   = useState(false);
 
-  const locationState              = useLocation();
-  const { spots, addSpot, deleteSpot } = useSpots();
+  const locationState = useLocation();
+  const { spots, addSpot, deleteSpot, history, restoreSpot, clearHistory } = useSpots();
 
-  const handleSave = (name, pos) => {
-    addSpot(name, pos);
+  const handleSave = (spotData) => {
+    addSpot(spotData);
     setShowSave(false);
   };
 
-  // Full-screen navigate overlay
   if (navigateTo) {
     return (
       <NavigateScreen
@@ -34,7 +33,6 @@ export default function App() {
 
   return (
     <div className="screen">
-      {/* Tab content */}
       {tab === "map" ? (
         <MapTab
           spots={spots}
@@ -48,13 +46,14 @@ export default function App() {
           locationState={locationState}
           onNavigate={setNavigateTo}
           onDelete={deleteSpot}
+          history={history}
+          onRestore={restoreSpot}
+          onClearHistory={clearHistory}
         />
       )}
 
-      {/* Bottom tab bar */}
       <BottomTabs active={tab} onChange={setTab} spotCount={spots.length} />
 
-      {/* Save modal */}
       {showSave && (
         <SaveModal
           position={locationState.position}
